@@ -133,83 +133,137 @@ def query_example():
 
 
 
+reqtag = requests.get('https://api.redtube.com/?data=redtube.Tags.getTagList&output=json')
+reqt = (reqtag.json())
 
+taglisz = list()
+lentag = len(reqt['tags'])
+for lent in range(0, lentag):
+    tagterm = (reqt['tags'][lent]['tag']['tag_name'])
+    #print(tagterm)
+    taglisz.append('<input type="radio" name="tag" value="{}">{}<br>'.format(tagterm, tagterm))
 
 @app.route('/', methods=['GET', 'POST']) #allow both GET and POST requests
 def form_example():
     if request.method == 'POST':  #this block is only entered when the form is submitted
-        searchtext = request.form.get('porntag')
+        searchtext = request.form.get('tag')
+
+        reqtumblr = requests.get('https://api.tumblr.com/v2/tagged?tag={}&api_key=fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4'.format(searchtext))
+        resptumblr = reqtumblr.json()
+        lentumb = len(resptumblr['response'])
+
+        #os.listdir()
+
+
+        finlist = list()
+
+        for resp in range(0, lentumb):
+            try:
+                print(resptumblr['response'][resp]['photos'][0]['original_size']['url'])
+
+                finlist.append('<img src="{}">'.format(resptumblr['response'][resp]['photos'][0]['original_size']['url']))
+
+                #r = requests.get(resptumblr['response'][resp]['photos'][0]['original_size']['url'], stream=True)
+                #if r.status_code == 200:
+                #    with open('/home/pi/dmgit/app/static/{}-{}.jpg'.format(searchtext, resp), 'wb') as f:
+                #              r.raw.decode_content = True
+                #        shutil.copyfileobj(r.raw, f)
+
+
+                #os.system("thug /home/pi/memetest/{}.jpg '' ''".format(resp))
+            except KeyError:
+                pass
+
+        #todayart = os.listdir('/home/pi/memetest/test')
+
+        #finlist = list()
+        #for todart in todayart:
+        #    finlist.append('<img src="/static/{}/{}"><br><input type="text" name="{}"><br>'.format(searchtext, todart, todart))
+        headers = {"X-Mashape-Key": "ASbIsDmx6LmshK1AFZ4ZTzOnuHhTp10VlmpjsnYB5tD15GP9bu","Accept": "text/plain"}
+
+        response = requests.get("https://mashape-community-urban-dictionary.p.mashape.com/define?term={}".format(searchtext), headers=headers)
+
+        taglis = (response.json())
+        lenta = len(taglis['list'])
+        #print(lenta)
+        #print(taglis['list'][lent]['definition'])
+        #newdict.update({'tag' : tajs['tag']['tag_name']})
+        deflist = list()
+        for lent in range(0, lenta):
+            #print(taglis['list'][lent]['definition'])
+            deflist.append(taglis['list'][lent]['example'] + '<br>')
+
+
+
 
 
         #reqgif = requests.get("https://api.giphy.com/v1/gifs/search?api_key=ee58ff1d10c54fd29ddb0388126c2bcd&q=drugs&limit=25&offset=0&rating=PG-13&lang=en")
-        reqhif = requests.get('https://api.giphy.com/v1/gifs/search?api_key=ee58ff1d10c54fd29ddb0388126c2bcd&q={}&limit=25&offset=0&rating=PG-13&lang=en'.format(searchtext))
+        reqhif = requests.get('https://api.giphy.com/v1/gifs/search?api_key=ee58ff1d10c54fd29ddb0388126c2bcd&q={}&limit=25&offset=0&rating=R&lang=en'.format(searchtext))
+
+        reqporn = requests.get('https://api.redtube.com/?data=redtube.Videos.searchVideos&output=json&tags[]={}&thumbsize=medium'.format(searchtext))
+        reqp = reqporn.json()
+        try:
+            ranvideo = random.choice(reqp['videos'])
+        except KeyError:
+
+            pass
+
+        #someimg = list()
+        #lenvid = len(reqp['videos'])
+        #for lenr in range(0, lenvid):
+        #        print(reqp['videos'][lenr]['video']['title'])
+        #          someimg.append()
+        #        #print(reqp['videos'][lenr]['video']['title'])
+        #        print(reqp['videos'][lenr]['video']['thumb'])
+
+
+    #print(reqp['videos'][lenr]['video'])
 
         reqxm = (reqhif.json())
-        rannum = random.randint(0,24)
+        lenimg = len(reqxm['data'])
+        #print(lenimg)
+        rannum = random.randint(0,lenimg -1)
 
-        gifresult = reqxm['data'][0]['images']['fixed_width']['url']
+        gifresult = reqxm['data'][rannum]['images']['fixed_width']['url']
 
-        img = Image.open('/home/{}/dmgit/app/static/template.jpg'.format(myusr))
-
-        upzero = "I don't always watch porn"
-
-
-        botzero = "But when I do I watch {}".format(searchtext)
-
-        imageSize = img.size
-
-                # find biggest font size that works
-        fontSize = int(imageSize[1]/18)
-        font = ImageFont.truetype("/home/{}/Downloads/impact.ttf".format(myusr), fontSize)
-        topTextSize = font.getsize(upzero)
-        bottomTextSize = font.getsize(botzero)
-
-        fontSize = fontSize - 1
-        font = ImageFont.truetype("/home/{}/Downloads/impact.ttf".format(myusr), fontSize)
-        topTextSize = font.getsize(upzero)
-        bottomTextSize = font.getsize(botzero)
-
-                # find top centered position for top text
-        topTextPositionX = (imageSize[0]/2) - (topTextSize[0]/2)
-        topTextPositionY = 0
-        topTextPosition = (topTextPositionX, topTextPositionY)
-
-                # find bottom centered position for bottom text
-        bottomTextPositionX = (imageSize[0]/2) - (bottomTextSize[0]/2)
-        bottomTextPositionY = imageSize[1] - bottomTextSize[1] -20
-        bottomTextPosition = (bottomTextPositionX, bottomTextPositionY)
-
-        draw = ImageDraw.Draw(img)
-
-        outlineRange = int(fontSize/15)
-        for x in range(-outlineRange, outlineRange+1):
-            for y in range(-outlineRange, outlineRange+1):
-                draw.text((topTextPosition[0]+x, topTextPosition[1]+y), upzero, (0,0,0), font=font)
-                draw.text((bottomTextPosition[0]+x, bottomTextPosition[1]+y), botzero, (0,0,0), font=font)
-
-        draw.text(topTextPosition, upzero, (255,255,255), font=font)
-        draw.text(bottomTextPosition, botzero, (255,255,255), font=font)
-
-        img.save("/home/{}/dmgit/app/static/{}.jpg".format(myusr, searchtext))
-        #               album_path="me/photos")
+        
 
 
 
 
 
+        try:
+            return '''
+
+                    <img src="static/{}.jpg"><br>
+                    <h1>porntag results</h1><br>
+                    <img src="{}">
+                    <h3>Results for<br>
+                    {}</h3><br>
+                    <p>{}</p>
+                    <img src="{}"><br>
+                    {}<br>
+                    {}<br>
 
 
-        return '''
 
-                <img src="/static/{}.jpg"><br>
-                <h1>porntag results</h1><br>
-                <img src="{}">
-                <h3>Results for<br>
-                {}</h3><br>
+                      '''.format(searchtext, gifresult, searchtext, ranvideo['video']['title'], ranvideo['video']['thumb'], [x for x in finlist], [x for x in deflist])
+        except UnboundLocalError:
+            return '''
+
+                        <img src="/static/{}.jpg"><br>
+                        <h1>porntag results</h1><br>
+                        <img src="{}">
+                        <h3>Results for<br>
+                        <img src="{}"><br>
+                        {}<br>
+                        {}<br>
 
 
 
-                  '''.format(searchtext, gifresult, searchtext)
+                          '''.format(searchtext, gifresult, searchtext, [x for x in finlist], [x for x in deflist])
+
+
 
     return '''
             <!DOCTYPE html>
@@ -217,22 +271,24 @@ def form_example():
 
         <head>
 
-          <title>Search legal materials</title>
+          <title>Search Porn</title>
           <meta name="viewport" content="width=device-width, initial-scale=1">
           </head>
           <body>
             <img src="static/header.jpg"><br>
-            <h1>Search legal materials</h1>
+            <h1>Search Porn</h1>
 
             <form method="POST">
               <fieldset>
-                <legend>Search legal materials:</legend>
+                <legend>Search porn:</legend>
                   porn tag: <input type="text" name="porntag"><br>
+
+                  {}
 
 
                   <input type="submit" value="Submit"><br>
                   </fieldset>
-              </form></body>'''
+              </form></body>'''.format( [x for x in taglisz])
 
 @app.route('/json-example')
 def json_example():
